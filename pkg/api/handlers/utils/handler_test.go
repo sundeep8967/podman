@@ -113,6 +113,25 @@ func TestWriteJSONNoHTMLEscape(t *testing.T) {
 	}
 }
 
+func TestWriteResponseReaderContentType(t *testing.T) {
+	t.Run("default content-type is application/x-tar", func(t *testing.T) {
+		recorder := httptest.NewRecorder()
+		reader := strings.NewReader("some-content")
+		WriteResponse(recorder, 200, reader)
+		assert.Equal(t, "application/x-tar", recorder.Header().Get("Content-Type"))
+		assert.Equal(t, "some-content", recorder.Body.String())
+	})
+
+	t.Run("custom content-type is preserved", func(t *testing.T) {
+		recorder := httptest.NewRecorder()
+		recorder.Header().Set("Content-Type", "text/vnd.yaml")
+		reader := strings.NewReader("apiVersion: v1\nkind: Pod\n")
+		WriteResponse(recorder, 200, reader)
+		assert.Equal(t, "text/vnd.yaml", recorder.Header().Get("Content-Type"))
+		assert.Equal(t, "apiVersion: v1\nkind: Pod\n", recorder.Body.String())
+	})
+}
+
 func TestParseOptionalJSONField(t *testing.T) {
 	t.Run("field exists with valid JSON", func(t *testing.T) {
 		jsonStr := `["item1", "item2"]`

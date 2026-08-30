@@ -98,7 +98,9 @@ func WriteResponse(w http.ResponseWriter, code int, value any) {
 			logrus.Errorf("Unable to copy to response: %q", err)
 		}
 	case io.Reader:
-		w.Header().Set("Content-Type", "application/x-tar")
+		if w.Header().Get("Content-Type") == "" {
+			w.Header().Set("Content-Type", "application/x-tar")
+		}
 		w.WriteHeader(code)
 
 		if _, err := io.Copy(w, v); err != nil {
